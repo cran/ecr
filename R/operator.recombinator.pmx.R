@@ -1,5 +1,5 @@
 #' @title
-#' Generator of the Partially-Mapped-Crossover (PMX) recombination operator.
+#' Partially-Mapped-Crossover (PMX) recombinator.
 #'
 #' @description
 #' This recombination operator is specifically designed for permutations.
@@ -7,19 +7,21 @@
 #' as follows: a) copy the subsequence of one parent and b) fill the remaining
 #' positions while preserving the order and position of as many genes as possible.
 #'
+#' @param inds [\code{numeric}]\cr
+#'   Parents, i.e., list of exactly two permutations of equal length.
 #' @return [\code{ecr_recombinator}]
 #' @family recombinators
 #' @export
-setupPMXRecombinator = function() {
-  recombinator = function(inds, task, control) {
-    p1 = inds[[1]]
-    p2 = inds[[2]]
+recPMX = makeRecombinator(
+  recombinator = function(inds) {
+    p1 = inds[[1L]]
+    p2 = inds[[2L]]
     n = length(p1)
 
     # select two random positions and bring them in order
     idx = sample(n, 2L)
-    i1 = idx[1]
-    i2 = idx[2]
+    i1 = idx[1L]
+    i2 = idx[2L]
     if (i2 < i1) {
       tmp = i1
       i1 = i2
@@ -55,14 +57,7 @@ setupPMXRecombinator = function() {
       }
     }
     return(wrapChildren(c1, c2))
-  }
-
-  makeRecombinator(
-    recombinator = recombinator,
-    name = "PMX recombinator",
-    description = "Performs partially mapped crossover on permutations.",
-    supported = "permutation",
-    n.parents = 2L,
-    n.children = 2L
-  )
-}
+  },
+  supported = "permutation",
+  n.parents = 2L,
+  n.children = 2L)

@@ -4,7 +4,7 @@
 \alias{computeGenerationalDistance}
 \title{Computes Generational Distance.}
 \usage{
-computeGenerationalDistance(A, B, p = 1,
+computeGenerationalDistance(A, B, p = 1, normalize = FALSE,
   dist.fun = computeEuclideanDistance)
 }
 \arguments{
@@ -15,8 +15,12 @@ First point set (each column corresponds to a point).}
 Second point set (each column corresponds to a point).}
 
 \item{p}{[\code{numeric(1)}]\cr
-Parameter p of the average Hausdoff metrix. Default is 1. See the description
-for details.}
+Parameter p of the average Hausdoff metric.
+Default is 1.}
+
+\item{normalize}{[\code{logical(1)}]\cr
+Should the front be normalized on basis of \code{B}?
+Default is \code{FALSE}.}
 
 \item{dist.fun}{[\code{matrix}]\cr
 Distance function to compute distance between points x and y. Expects a single
@@ -29,4 +33,3 @@ Default is \code{computeEuclideanDist}.}
 \description{
 Helper to compute the Generational Distance (GD) between two sets of points.
 }
-

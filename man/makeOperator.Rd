@@ -4,27 +4,15 @@
 \alias{makeOperator}
 \title{Construct evolutionary operator.}
 \usage{
-makeOperator(operator, name, description = NULL,
-  supported = getAvailableRepresentations(), params = list())
+makeOperator(operator, supported = getAvailableRepresentations())
 }
 \arguments{
 \item{operator}{[\code{function}]\cr
-Actual mutation operator.}
-
-\item{name}{[\code{character(1)}]\cr
-Name of the operator.}
-
-\item{description}{[\code{character(1)}]\cr
-Short description of how the mutator works.
-Default is \code{NULL} which means no description at all.}
+Actual operator.}
 
 \item{supported}{[\code{character}]\cr
 Vector of names of supported parameter representations. Possible choices:
 \dQuote{permutation}, \dQuote{float}, \dQuote{binary} or \dQuote{custom}.}
-
-\item{params}{[\code{list}]\cr
-Named list of the parameters the operator has been initialized with.
-Default is the empty list.}
 }
 \value{
 [\code{ecr_operator}] Operator object.
@@ -36,4 +24,3 @@ Helper function which constructs an evolutionary operator.
 In general you will not need this function, but rather one of its
 deriviatives like \code{\link{makeMutator}} or \code{\link{makeSelector}}.
 }
-

@@ -1,21 +1,17 @@
 #' @title
-#' Simple (naive) mating pool generator.
+#' Simple (naive) selector.
 #'
 #' @description
-#' Just for testing. Actually does not really select, but instead returns the
-#' entire population to form the mating pool.
+#' Just for testing. Actually does not really select, but instead returns a random
+#' sample of \code{ncol(fitness)} indizes.
 #'
+#' @template arg_fitness
+#' @template arg_n_select
 #' @return [\code{setOfIndividuals}]
 #' @family selectors
 #' @export
-setupSimpleSelector = function() {
-  selector = function(fitness, n.select, task, control, opt.state) {
-    return(1:ncol(fitness))
-  }
-  makeSelector(
-    selector = selector,
-    name = "Simple selector",
-    description = "Simply returns the entire population.",
-    supported.objectives = c("single-objective", "multi-objective")
-  )
-}
+selSimple = makeSelector(
+  selector = function(fitness, n.select) {
+    return(sample(1:ncol(fitness), size = n.select, replace = TRUE))
+  },
+  supported.objectives = c("single-objective", "multi-objective"))

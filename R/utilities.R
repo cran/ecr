@@ -55,23 +55,15 @@ wrapChildren = function(...) {
 }
 
 # @title
-#   Convert parameter list to string.
+# Add some properties to matrix of fitness values.
 #
-# @param parameters [\code{list}]\cr
-#   Named list of parameters.
-# @return Nothing
-getParametersAsString = function(parameters) {
-  x = ""
-  n = length(parameters)
-  if (n == 0) {
-    return("no parameters")
-  }
-  for (i in seq(n)) {
-    name = names(parameters)[i]
-    x = paste(x, " ", name, ": ", parameters[[name]], sep = "")
-    if (i < n) {
-      x = paste(x, ",", sep = "")
-    }
-  }
-  return(x)
+# @param fitness [matrix]
+#   Fitness matrix.
+# @param control [ecr_control]
+#   Control object.
+# @return [ecr_fitness_matrix]
+makeFitnessMatrix = function(fitness, control) {
+  fitness = BBmisc::addClasses(fitness, "ecr_fitness_matrix")
+  fitness = BBmisc::setAttribute(fitness, "minimize", control$task$minimize)
+  return(fitness)
 }

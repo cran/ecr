@@ -4,37 +4,39 @@
 \alias{ecr}
 \title{Interface to \pkg{ecr} similar to the \code{\link[stats]{optim}} function.}
 \usage{
-ecr(obj.fun, n.dim, lower = NULL, upper = NULL, n.bits, representation,
-  n.population, n.offspring, n.mating.pool = floor(n.population/2),
-  survival.strategy = "plus", n.elite = 0L, vectorized.evaluation = FALSE,
-  custom.constants = list(), logger = NULL,
-  monitor = setupConsoleMonitor(), max.iter = 100L, max.evals = NULL,
-  max.time = NULL, more.args = list(), initial.population = NULL,
-  parent.selector = getDefaultEvolutionaryOperators(representation,
-  "parent.selector"),
-  survival.selector = getDefaultEvolutionaryOperators(representation,
-  "survival.selector"),
-  generator = getDefaultEvolutionaryOperators(representation, "generator"),
-  mutator = getDefaultEvolutionaryOperators(representation, "mutator"),
-  recombinator = getDefaultEvolutionaryOperators(representation,
-  "recombinator"))
+ecr(fitness.fun, minimize = NULL, n.objectives = NULL, n.dim = NULL,
+  lower = NULL, upper = NULL, n.bits, representation, mu, lambda,
+  perm = NULL, p.recomb = 0.7, p.mut = 0.3, survival.strategy = "plus",
+  n.elite = 0L, custom.constants = list(), logger = NULL,
+  monitor = NULL, more.args = list(), initial.solutions = NULL,
+  parent.selector = NULL, survival.selector = NULL, mutator = NULL,
+  recombinator = NULL, terminators = list(stopOnIters(100L)), ...)
 }
 \arguments{
-\item{obj.fun}{[\code{function}]\cr
-The single-objective target function. Can be any R function which takes a
-single vector as input and returns a scalar value describing the vectors
-fitness.}
+\item{fitness.fun}{[\code{function}]\cr
+The fitness function.}
+
+\item{minimize}{[\code{logical(n.objectives)}]\cr
+Logical vector with ith entry \code{TRUE} if the ith objective of \code{fitness.fun}
+shall be minimized. If a single logical is passed, it is assumed to be valid
+for each objective.}
+
+\item{n.objectives}{[\code{integer(1)}]\cr
+Number of objectives of \code{obj.fun}.
+Optional if \code{obj.fun} is a benchmark function from package \pkg{smoof}.}
 
 \item{n.dim}{[\code{integer(1)}]\cr
 Dimension of the decision space.}
 
 \item{lower}{[\code{numeric}]\cr
 Vector of minimal values for each parameter of the decision space in case
-of float or permutation encoding.}
+of float or permutation encoding.
+Optional if \code{obj.fun} is a benchmark function from package \pkg{smoof}.}
 
 \item{upper}{[\code{numeric}]\cr
 Vector of maximal values for each parameter of the decision space in case
-of float or permutation encoding.}
+of float or permutation encoding.
+Optional if \code{obj.fun} is a benchmark function from package \pkg{smoof}.}
 
 \item{n.bits}{[\code{integer(1)}]\cr
 Number of bits to use for binary representation.}
@@ -43,16 +45,24 @@ Number of bits to use for binary representation.}
 Genotype representation of the parameters. Available are \dQuote{binary},
 \dQuote{float}, \dQuote{permutation} and \dQuote{custom}.}
 
-\item{n.population}{[\code{integer(1)}]\cr
+\item{mu}{[\code{integer(1)}]\cr
 Number of individuals in the population.}
 
-\item{n.offspring}{[\code{integer(1)}]\cr
+\item{lambda}{[\code{integer(1)}]\cr
 Number of individuals generated in each generation.}
 
-\item{n.mating.pool}{[\code{integer(1)}]\cr
-Number of individuals which can potentially participate in the
-generation of offspring.
-Default is half of the population size.}
+\item{perm}{[\code{integer(1)} | \code{vector}]\cr
+Either a single integer number. In this case the set is assumed to be \code{1:perm}.
+Alternatively, a set, i.e., a vector of elements can be passed which should form each
+individual.}
+
+\item{p.recomb}{[\code{numeric(1)}]\cr
+Probability of two parents to perform crossover.
+Default is 0.7.}
+
+\item{p.mut}{[\code{numeric(1)}]\cr
+Probability to apply mutation to a child.
+Default is 0.1.}
 
 \item{survival.strategy}{[\code{character(1)}]\cr
 Determines the survival strategy used by the EA. Possible are \dQuote{plus} for
@@ -65,50 +75,25 @@ next generation without changing. Keep in mind, that the algorithm
 does not care about this option if the \code{survival.strategy} is set to 'plus'.
 Default is 0.}
 
-\item{vectorized.evaluation}{[\code{logical(1L)}]\cr
-Is the fitness/objective function vectorized? I.e., does the fitness function accept
-a list? This allows for faster execution or parallelization by hand.
-If \code{TRUE} the following destinction on the type of the objective function is made:
-\describe{
-  \item{Is \code{smoof_function}}{If the objective function is of type \code{smoof_function} from package \pkg{smoof}
-  and the smoof function is vectorized, the population - which is a list internally -
-  is reduced to a matrix and passed to the smoof function (vectorization in smoof
-  is allowed for continuous functions only).}
-  \item{Is not a \code{smoof_function}}{In this case the individuals of
-  the population are passed entirely as a list to the objective function.}
-}
-Default is \code{FALSE}.}
-
 \item{custom.constants}{[\code{list}]\cr
 Additional constants which should be available to all generators and operators.
 Defaults to empty list.}
 
 \item{logger}{[\code{function}]\cr
 Monitoring object used to log stuff.
-Default is \code{NULL} which means no logging at all.
-See \code{\link{setupOptPathLoggingMonitor}} for ecr's build-in logger.}
+Default is \code{NULL} which means no logging at all.}
 
 \item{monitor}{[\code{function}]\cr
 Monitoring function.
 Default is \code{NULL}, i.e. no monitoring.}
 
-\item{max.iter}{[\code{integer(1)}]\cr
-Maximal number of iterations. Default ist \code{100L}.}
-
-\item{max.evals}{[\code{integer(1)}]\cr
-Maximal number of iterations/generations. Default is \code{Inf}.}
-
-\item{max.time}{[\code{integer(1)}]\cr
-Time budget in seconds. Default ist \code{Inf}.}
-
 \item{more.args}{[\code{list}]\cr
 Additional arguments passed to objective function.}
 
-\item{initial.population}{[\code{list}]\cr
+\item{initial.solutions}{[\code{list}]\cr
 List of individuals which should be placed in the initial population.
-The function will stop with an error message if the number of passed individuals
-is larger than \code{control$n.population}. If the number of passed individuals
-is lower than \code{control$n.population}, the population will be filled up
+If the number of passed individuals
+is lower than \code{mu}, the population will be filled up
 by individuals generated by the corresponding generator.
 Default is \code{NULL}, i.e., the entire population is generated by the
 population generator.}
@@ -121,48 +106,37 @@ given population to the mating pool, i. e., allow them to become parents.}
 Selection operator which implements a procedurce to extract individuals from
 a given set, which should survive and set up the next generation.}
 
-\item{generator}{[\code{ecr_generator}]\cr
-Generator operator of type \code{ecr_generator} for the generation of the initial
-population.}
-
 \item{mutator}{[\code{ecr_mutator}]\cr
 Mutation operator of type \code{ecr_mutator}.}
 
 \item{recombinator}{[\code{ecr_recombinator}]\cr
 Recombination operator of type \code{ecr_recombinator}.}
+
+\item{terminators}{[\code{list}]\cr
+List of stopping conditions of type \dQuote{ecr_terminator}.
+Default is to stop after 100 iterations.}
+
+\item{...}{[any]\cr
+Further arguments passed down to \code{fitness.fun}.}
 }
 \value{
 [\code{\link{ecr_result}}]
 }
 \description{
-The most flexible way to setup evolutionary algorithms with \pkg{ecr} is by
-explicitely generating a task and a control object and passing both to
-\code{\link{doTheEvolution}}. Although this approach is highly flexible
-and very readable it requires quite a lot of code. However, in everyday
-life R users frequently need to optimize a single-objective R function.
+The most flexible way to setup evolutionary algorithms with \pkg{ecr2} is by
+explicitely writing the evolutionary loop utilizing various ecr2 utlity functions.
+However, in everyday life R users frequently need to optimize a single-objective R function.
 The \code{ecr} function thus provides a more R like interface for single
 objective optimization similar to the interface of the \code{\link[stats]{optim}}
 function.
 }
-\note{
-This helper function is applicable for single-objective optimization based
-on default encodings, i.e., binary, float and permutation, only.
-If your function at hand has multiple objectives or you need special
-encodings and operators you need to work with \code{\link{doTheEvolution}}
-directly.
-}
 \examples{
 fn = function(x) {
    sum(x^2)
- }
-
-res = ecr(fn, n.dim = 2L, lower = c(-5, -5), upper = c(5, 5),
- representation = "float", n.population = 20L, n.offspring = 10L, max.iter = 30L)
 }
-\seealso{
-\code{\link{setupECRControl}} for building the control object,
-\code{\link{makeOptimizationTask}} to define an optimization problem and
-\code{\link{doTheEvolution}} for the main working horse of \pkg{ecr}.
+lower = c(-5, -5); upper = c(5, 5)
+res = ecr(fn, n.dim = 2L, n.objectives = 1L, lower = lower, upper = lower,
+ representation = "float", mu = 20L, lambda = 10L,
+  mutator = setup(mutGauss, lower = lower, upper = upper))
 }
 \keyword{optimize}
-

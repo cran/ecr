@@ -2,26 +2,62 @@
 % Please edit documentation in R/generateOffspring.R
 \name{generateOffspring}
 \alias{generateOffspring}
-\title{Creates offspring from a given mating pool of parents.}
+\alias{mutate}
+\alias{recombinate}
+\title{Helper functions for offspring generation}
 \usage{
-generateOffspring(opt.state, mating.pool, control)
+generateOffspring(control, inds, fitness, lambda, p.recomb = 0.7,
+  p.mut = 0.1)
+
+mutate(control, inds, p.mut = 0.1, slot = "mutate", ...)
+
+recombinate(control, inds, fitness, lambda = length(inds), p.recomb = 0.7,
+  slot = "recombine", ...)
 }
 \arguments{
-\item{opt.state}{[\code{ecr_opt_state}]\cr
-Optimization state.}
-
-\item{mating.pool}{[\code{ecr_population}]\cr
-Mating pool to select individuals from.}
-
 \item{control}{[\code{ecr_control}]\cr
 Control object.}
+
+\item{inds}{[\code{list}]\cr
+List of individuals.}
+
+\item{fitness}{[\code{matrix}]\cr
+Matrix of fitness values (each column contains the fitness value(s) of one
+individual).}
+
+\item{lambda}{[\code{integer(1)}]\cr
+Number of individuals generated in each generation.}
+
+\item{p.recomb}{[\code{numeric(1)}]\cr
+Probability of two parents to perform crossover.
+Default is 0.7.}
+
+\item{p.mut}{[\code{numeric(1)}]\cr
+Probability to apply mutation to a child.
+Default is 0.1.}
+
+\item{slot}{[\code{character(1)}]\cr
+The slot of the control object which contains the registered operator to use.
+Default is \dQuote{mutate} for \code{mutate} and \dQuote{recombine} for \code{recombinate}.
+In most cases there is no need to change this. However, it might be useful if you make use
+of different mutation operators registerted, e.g., in the slots \dQuote{mutate1} and \dQuote{mutate2}.}
+
+\item{...}{[any]\cr
+Furhter arguments passed down to recombinator/mutator.
+There parameters will overwrite parameters in \code{par.list}.}
 }
 \value{
-[\code{ecr_population}] Generated offspring.
+[\code{list}] List of individuals.
 }
 \description{
-Given and optimization state and a mating pool of individuals this function
-generates offspring individuals based on the parameters specified in the
-control object.
+Function \code{mutate} expects a control object, a list of individuals, and a mutation
+probability. The mutation operator registered in the control object is then applied
+with the given probability to each individual.
+Function \code{recombinate} expects a control object, a list of individuals as well as
+their fitness matrix and creates \code{lambda} offspring individuals by recombining parents
+from \code{inds}. Which parents take place in the parent selection depends on
+the \code{parent.selector} registered in the control object.
+Finally, function \code{generateOffspring} is a wrapper for both \code{recombinate}
+and \code{mutate}. Both functions are applied subsequently to generate new individuals
+by variation and mutation.
 }
-

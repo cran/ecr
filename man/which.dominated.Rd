@@ -3,11 +3,14 @@
 \name{which.dominated}
 \alias{which.dominated}
 \alias{which.nondominated}
+\alias{isMaximallyDominated}
 \title{Determine which points of a set are (non)dominated.}
 \usage{
 which.dominated(x)
 
 which.nondominated(x)
+
+isMaximallyDominated(x)
 }
 \arguments{
 \item{x}{[\code{matrix}]\cr
@@ -18,9 +21,11 @@ of objectives.}
 [\code{integer}]
 }
 \description{
-Simple wrapper functions around \code{\link{dominated}}. Given a matrix with one
-point per column \code{which.dominated} returns the row numbers of the dominated
-points and \code{which.nondominated} the column numbers of the nondominated points.
+Given a matrix with one point per column \code{which.dominated} returns the
+column numbers of the dominated points and \code{which.nondominated} the column
+numbers of the nondominated points. Function \code{isMaximallyDominated} returns
+a logical vector with \code{TRUE} for each point which does not dominate any
+other point.
 }
 \examples{
   data(mtcars)
@@ -31,4 +36,3 @@ points and \code{which.nondominated} the column numbers of the nondominated poin
   print(mtcars[idxs, ])
 }
 \keyword{optimize}
-

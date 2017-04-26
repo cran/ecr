@@ -1,5 +1,5 @@
 #' @title
-#' Generator of the Gaussian mutation operator.
+#' Gaussian mutator.
 #'
 #' @description
 #' Default Gaussian mutation operator known from Evolutionary Algorithms.
@@ -8,35 +8,35 @@
 #' distributed random value to each component of \eqn{\mathbf{x}}, i.~e.,
 #' \eqn{\tilde{\mathbf{x}}_i = \mathbf{x}_i + \sigma \mathcal{N}(0, 1)}.
 #'
+#' @param ind [\code{numeric}]\cr
+#'   Numeric vector / individual to mutate.
 #' @param p [\code{numeric(1)}]\cr
 #'   Probability of mutation for the gauss mutation operator.
 #' @param sdev [\code{numeric(1)}\cr
 #'   Standard deviance of the Gauss mutation, i. e., the mutation strength.
-#' @return [\code{ecr_mutator}]
+#' @param lower [\code{numeric}]\cr
+#'   Vector of minimal values for each parameter of the decision space.
+#' @param upper [\code{numeric}]\cr
+#'   Vector of maximal values for each parameter of the decision space.
+#' @return [\code{numeric}]
 #' @family mutators
 #' @export
-setupGaussMutator = function(p = 1L, sdev = 0.05) {
-  assertNumber(p, lower = 0, finite = TRUE, na.ok = FALSE)
-  assertNumber(sdev, lower = 0, finite = TRUE, na.ok = FALSE)
+mutGauss = makeMutator(
+  mutator = function(ind, p = 1L, sdev = 0.05, lower, upper) {
+    assertNumber(p, lower = 0, finite = TRUE, na.ok = FALSE)
+    assertNumber(sdev, lower = 0, finite = TRUE, na.ok = FALSE)
+    assertNumeric(lower, any.missing = FALSE, all.missing = FALSE)
+    assertNumeric(lower, any.missing = FALSE, all.missing = FALSE)
+    if (length(lower) != length(upper)) {
+      stopf("Gauss mutator: length of lower and upper bounds need to be equal!")
+    }
 
-  force(p)
-  force(sdev)
-
-  mutator = function(ind, task, control) {
-    n.params = length(ind)
-    idx = which(runif(n.params) < p)
-    mut = rnorm(length(idx), mean = 0, sd = sdev)
-    ind[idx] = ind[idx] + mut
+    n = length(ind)
+    mut.idx = runif(n) < p
+    mut.noise = rnorm(sum(mut.idx), mean = 0, sd = sdev)
+    ind[mut.idx] = ind[mut.idx] + mut.noise
     # correct bounds
-    ind = pmin(pmax(getLower(task$par.set), ind), getUpper(task$par.set))
+    ind = pmin(pmax(lower, ind), upper)
     return(ind)
-  }
-
-  makeMutator(
-    mutator = mutator,
-    name = "Gauss mutator",
-    description = "Adds gaussian noise to each gene",
-    supported = "float",
-    params = list(p = p, sdev = sdev)
-  )
-}
+  },
+  supported = "float")

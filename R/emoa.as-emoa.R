@@ -10,7 +10,7 @@
 #'
 #' @note
 #' This is a pure R implementation of the AS-EMOA algorithm. It hides the regular
-#' \pkg{ecr} interface and offers a more R like interface while still being quite
+#' \pkg{ecr2} interface and offers a more R like interface while still being quite
 #' adaptable.
 #'
 #' @keywords optimize
@@ -24,9 +24,14 @@
 #' bridge between Probability, Set Oriented Numerics and Evolutionary Computation
 #' V, Springer: Berlin Heidelberg 2014.
 #'
-#' @template arg_optimization_task
-#' @param n.population [\code{integer(1)}]\cr
-#'   Population size. Default is \code{10}.
+#' @template arg_fitness_fun
+#' @template arg_n_objectives
+#' @template arg_minimize
+#' @template arg_n_dim
+#' @template arg_lower
+#' @template arg_upper
+#' @param mu [\code{integer(1)}]\cr
+#'   Population size. Default is 10.
 #' @param aspiration.set [\code{matrix}]\cr
 #'   The aspiration set. Each column contains one point of the set.
 #' @param normalize.fun [\code{function}]\cr
@@ -44,46 +49,55 @@
 #' @template arg_parent_selector
 #' @template arg_mutator
 #' @template arg_recombinator
-#' @template arg_max_iter
-#' @template arg_max_evals
-#' @template arg_max_time
-#' @param ... [any]\cr
-#'   Further arguments passed to \code{\link{setupECRControl}}.
-#' @return [\code{ecr_asemoa_result, ecr_multi_objective_result}]
-#' @example examples/ex_asemoa.R
+#' @template arg_terminators
+# @param ... [any]\cr
+#   Further arguments passed to \code{\link{setupECRControl}}.
+#' @return [\code{ecr_multi_objective_result}]
+# @example examples/ex_asemoa.R
 #' @export
 asemoa = function(
-  task,
-  n.population = 10L,
+  fitness.fun,
+  n.objectives = NULL,
+  minimize = NULL,
+  n.dim = NULL,
+  lower = NULL,
+  upper = NULL,
+  mu = 10L,
   aspiration.set = NULL,
   normalize.fun = NULL,
   dist.fun = ecr:::computeEuclideanDistance,
   p = 1,
-  parent.selector = setupSimpleSelector(),
-  mutator = setupPolynomialMutator(eta = 25, p = 0.2),
-  recombinator = setupSBXRecombinator(eta = 15, p = 0.7),
-  max.iter = 100L,
-  max.evals = NULL,
-  max.time = NULL,
-  ...) {
+  parent.selector = setup(selSimple),
+  mutator = setup(mutPolynomial, eta = 25, p = 0.2, lower = lower, upper = upper),
+  recombinator = setup(recSBX, eta = 15, p = 0.7, lower = lower, upper = upper),
+  terminators = list(stopOnIters(100L))) {
 
-  if (isSmoofFunction(task)) {
-    task = makeOptimizationTask(task)
+  if (isSmoofFunction(fitness.fun)) {
+    n.dim = getNumberOfParameters(fitness.fun)
+    par.set = getParamSet(fitness.fun)
+    lower = getLower(par.set)
+    upper = getUpper(par.set)
   }
-  assertMatrix(aspiration.set, mode = "numeric", any.missing = FALSE, all.missing = FALSE, min.rows = 2L)
-  if (nrow(aspiration.set) != task$n.objectives) {
-    stopf("AS-EMAO: Dimension of the aspiration set needs to be equal to the number of objectives,
-      but %i <> %i.", nrow(aspiration.set), task$n.objectives)
-  }
+  assertMatrix(aspiration.set, mode = "numeric", any.missing = FALSE,
+    all.missing = FALSE, min.rows = 2L)
+  # if (nrow(aspiration.set) != task$n.objectives) {
+  #   stopf("AS-EMAO: Dimension of the aspiration set needs to be equal to the number of objectives,
+  #     but %i <> %i.", nrow(aspiration.set), task$n.objectives)
+  # }
   n.archive = ncol(aspiration.set)
 
-  assertInt(n.population, lower = 5L)
+  assertInt(mu, lower = 5L)
   assertInt(n.archive, lower = 3L)
   if (!is.null(normalize.fun)) {
     assertFunction(normalize.fun, args = c("set", "aspiration.set"), ordered = TRUE)
   }
   assertFunction(dist.fun)
   assertNumber(p, lower = 0.001)
+
+  force(aspiration.set)
+  force(n.dim)
+  force(lower)
+  force(upper)
 
   # This is the main selection mechanism of the AS-EMOA.
   # Remove the point which leads to highest
@@ -95,8 +109,7 @@ asemoa = function(
   }
 
   fastASEMOASelector = makeSelector(
-    selector = function(fitness, n.select, task, control, opt.state) {
-      aspiration.set = control$aspiration.set
+    selector = function(fitness, n.select, par.list) {
       n.archive = ncol(aspiration.set)
 
       # get nondominated points
@@ -156,15 +169,12 @@ asemoa = function(
       }
       return(nondom.idx[-astar.idx])
     },
-    supported.objectives = "multi-objective",
-    name = "Fast AS-EMOA selector",
-    description = "Uses sped up delta-p update."
+    supported.objectives = "multi-objective"
   )
 
   # Implementation of surival selection operator of the AS-EMOA algorithm.
   asemoaSelector = makeSelector(
-    selector = function(fitness, n.select, task, control, opt.state) {
-      aspiration.set = control$aspiration.set
+    selector = function(fitness, n.select) {
       n.archive = ncol(aspiration.set)
 
       # get offspring
@@ -205,56 +215,27 @@ asemoa = function(
 
       return(setdiff(pop.idx, astar))
     },
-    supported.objectives = "multi-objective",
-    name = "AS-EMOA selector",
-    description = "Selection takes place based on (modified) average Hausdorff metric"
+    supported.objectives = "multi-objective"
   )
 
-  asemoaGenerator = makeGenerator(
-    generator = function(size, task, control) {
-      uniformGenerator = setupUniformGenerator()
-      population = uniformGenerator(size, task, control)
-      #NOTE: here we use the objective function to compute the fitness values
-      fitness = evaluateFitness(population, task$fitness.fun, task, control)
-      # now filter out dominated solutions
-      nondom.idx = which.nondominated(fitness)
-      population$individuals = population$individuals[nondom.idx]
-      return(population)
-    },
-    name = "AS-EMOA generator",
-    description = "Generates uniformaly and reduces to non-dominated set",
-    supported = "float"
-  )
+  initial.solutions = genReal(mu, n.dim, lower, upper)
+  fitness.ip = do.call(cbind, lapply(initial.solutions, fitness.fun))
+  nondom.idx = which.nondominated(fitness.ip)
+  initial.solutions = initial.solutions[nondom.idx]
 
   # AS-EMOA control object
-  ctrl = setupECRControl(
-    n.population = n.population,
-    n.offspring = 1L,
+  res = ecr(fitness.fun = fitness.fun,
+    n.objectives = n.objectives, minimize = minimize,
+    n.dim = n.dim, lower = lower, upper = upper,
     representation = "float",
-    survival.strategy = "plus",
-    stopping.conditions = list(
-      setupMaximumEvaluationsTerminator(max.evals),
-      setupMaximumTimeTerminator(max.time),
-      setupMaximumIterationsTerminator(max.iter)
-    ),
-    ...
-  )
-
-  ctrl = setupEvolutionaryOperators(
-    ctrl,
-    parent.selector = parent.selector,
-    recombinator = recombinator,
-    generator = asemoaGenerator,
+    mu = mu, lambda = 1L,
+    initial.solutions = initial.solutions,
+    terminators = terminators,
     mutator = mutator,
-    survival.selector = fastASEMOASelector
-  )
+    recombinator = recombinator,
+    survival.selector = fastASEMOASelector)
 
-  #FIXME: this is rather ugly. We simply add some more args to the control object
-  # without sanity checks and stuff like that.
-  ctrl$aspiration.set = aspiration.set
-
-  res = doTheEvolution(task, ctrl)
-  res = BBmisc::addClasses(res, "ecr_asemoa_result")
+  #  res = BBmisc::addClasses(res, "ecr_asemoa_result")
   return(res)
 }
 

@@ -1,24 +1,19 @@
 #' @title
-#' Generator for the Inversion mutation operator.
+#' Inversion mutator.
 #'
 #' @description
 #' The Inversion mutation operator selects two positions within the chromosome at
-#' random and inverts this sub-permutation.
+#' random and inverts the elements inbetween.
 #'
-#' @return [\code{ecr_mutator}]
+#' @param ind [\code{integer}]\cr
+#'   Permutation of integers, i.e., vector of integer values.
+#' @return [\code{integer}]
 #' @export
-setupInversionMutator = function() {
-  mutator = function(ind, task, control) {
-    n.params = length(ind)
-    idx = sample(seq(n.params), size = 2L)
+mutInversion = makeMutator(
+  mutator = function(ind) {
+    n = length(ind)
+    idx = sample(seq(n), size = 2L)
     ind[idx[1]:idx[2]] = ind[idx[2]:idx[1]]
     return(ind)
-  }
-
-  makeMutator(
-    mutator = mutator,
-    name = "Inversion mutator",
-    description = "Selects two positions at random and inverts.",
-    supported = "permutation"
-  )
-}
+  },
+  supported = "permutation")

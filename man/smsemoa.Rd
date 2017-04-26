@@ -4,27 +4,45 @@
 \alias{smsemoa}
 \title{Implementation of the SMS-EMOA by Emmerich et al.}
 \usage{
-smsemoa(task, n.population = 100L, ref.point = NULL,
-  parent.selector = setupSimpleSelector(),
-  mutator = setupPolynomialMutator(eta = 25, p = 0.2),
-  recombinator = setupSBXRecombinator(eta = 15, p = 0.7), max.iter = NULL,
-  max.evals = NULL, max.time = NULL, ...)
+smsemoa(fitness.fun, n.objectives = NULL, n.dim = NULL, minimize = NULL,
+  lower = NULL, upper = NULL, mu = 100L, ref.point = NULL,
+  mutator = setup(mutPolynomial, eta = 25, p = 0.2, lower = lower, upper =
+  upper), recombinator = setup(recSBX, eta = 15, p = 0.7, lower = lower, upper
+  = upper), terminators = list(stopOnIters(100L)), ...)
 }
 \arguments{
-\item{task}{[\code{ecr_optimization_task}]\cr
-Optimization task. If a \code{smoof_function} is passed it is automatically
-converted into a task.}
+\item{fitness.fun}{[\code{function}]\cr
+The fitness function.}
 
-\item{n.population}{[\code{integer(1)}]\cr
-Population size. Default is \code{100}.}
+\item{n.objectives}{[\code{integer(1)}]\cr
+Number of objectives of \code{obj.fun}.
+Optional if \code{obj.fun} is a benchmark function from package \pkg{smoof}.}
+
+\item{n.dim}{[\code{integer(1)}]\cr
+Dimension of the decision space.}
+
+\item{minimize}{[\code{logical(n.objectives)}]\cr
+Logical vector with ith entry \code{TRUE} if the ith objective of \code{fitness.fun}
+shall be minimized. If a single logical is passed, it is assumed to be valid
+for each objective.}
+
+\item{lower}{[\code{numeric}]\cr
+Vector of minimal values for each parameter of the decision space in case
+of float or permutation encoding.
+Optional if \code{obj.fun} is a benchmark function from package \pkg{smoof}.}
+
+\item{upper}{[\code{numeric}]\cr
+Vector of maximal values for each parameter of the decision space in case
+of float or permutation encoding.
+Optional if \code{obj.fun} is a benchmark function from package \pkg{smoof}.}
+
+\item{mu}{[\code{integer(1)}]\cr
+Number of individuals in the population.
+Default is 100.}
 
 \item{ref.point}{[\code{numeric}]\cr
 Reference point for the hypervolume computation. Default is (11, ..., 11)'
 with the corresponding dimension.}
-
-\item{parent.selector}{[\code{ecr_selector}]\cr
-Selection operator which implements a procedure to copy individuals from a
-given population to the mating pool, i. e., allow them to become parents.}
 
 \item{mutator}{[\code{ecr_mutator}]\cr
 Mutation operator of type \code{ecr_mutator}.}
@@ -32,20 +50,15 @@ Mutation operator of type \code{ecr_mutator}.}
 \item{recombinator}{[\code{ecr_recombinator}]\cr
 Recombination operator of type \code{ecr_recombinator}.}
 
-\item{max.iter}{[\code{integer(1)}]\cr
-Maximal number of iterations. Default ist \code{100L}.}
-
-\item{max.evals}{[\code{integer(1)}]\cr
-Maximal number of iterations/generations. Default is \code{Inf}.}
-
-\item{max.time}{[\code{integer(1)}]\cr
-Time budget in seconds. Default ist \code{Inf}.}
+\item{terminators}{[\code{list}]\cr
+List of stopping conditions of type \dQuote{ecr_terminator}.
+Default is to stop after 100 iterations.}
 
 \item{...}{[any]\cr
-Further arguments passed to \code{\link{setupECRControl}}.}
+Further arguments passed down to fitness function.}
 }
 \value{
-[\code{ecr_smsemoa_result, ecr_multi_objective_result}]
+[\code{ecr_multi_objective_result}]
 }
 \description{
 Pure R implementation of the SMS-EMOA. This algorithm belongs to the group
@@ -55,7 +68,7 @@ and finally selects the best subset of individuals among all subsets by maximizi
 the Hypervolume indicator.
 }
 \note{
-This helper function hides the regular \pkg{ecr} interface and offers a more
+This helper function hides the regular \pkg{ecr2} interface and offers a more
 R like interface of this state of the art EMOA.
 }
 \references{
@@ -64,4 +77,3 @@ on dominated hypervolume, European Journal of Operational Research, Volume 181,
 Issue 3, 16 September 2007, Pages 1653-1669.
 }
 \keyword{optimize}
-

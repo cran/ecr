@@ -4,23 +4,16 @@
 \alias{makeSelector}
 \title{Construct a selection operator.}
 \usage{
-makeSelector(selector, name, description,
-  supported = getAvailableRepresentations(), supported.objectives,
-  supported.opt.direction = "minimize")
+makeSelector(selector, supported = getAvailableRepresentations(),
+  supported.objectives, supported.opt.direction = "minimize")
 }
 \arguments{
 \item{selector}{[\code{function}]\cr
 Actual selection operator.}
 
-\item{name}{[\code{character(1)}]\cr
-Name of the selector.}
-
-\item{description}{[\code{character(1)}]\cr
-Short description of how the selector works.}
-
 \item{supported}{[\code{character}]\cr
-Vector of strings/names of supported parameter representations. For example
-'permutation', 'float', 'binary'.}
+Vector of strings/names of supported parameter representations. Possible choices:
+\dQuote{permutation}, \dQuote{float}, \dQuote{binary} or \dQuote{custom}.}
 
 \item{supported.objectives}{[\code{character}]\cr
 At least one of \dQuote{single-objective} or \dQuote{multi-objective}.}
@@ -38,4 +31,3 @@ in favour of low fitness values.}
 Helper function which defines a selector method, i. e., an operator which
 takes the population and returns a part of it for mating or survival.
 }
-

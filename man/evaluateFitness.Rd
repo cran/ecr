@@ -2,33 +2,27 @@
 % Please edit documentation in R/evaluateFitness.R
 \name{evaluateFitness}
 \alias{evaluateFitness}
-\title{Computes the fitness values for each member of a given population.}
+\title{Computes the fitness value(s) for each individual of a given set.}
 \usage{
-evaluateFitness(population, fitness.fun, task, control)
+evaluateFitness(control, inds, ...)
 }
 \arguments{
-\item{population}{[\code{list}]\cr
-Population.}
-
-\item{fitness.fun}{[\code{function}]\cr
-Fitness function.}
-
-\item{task}{[\code{ecr_optimization_task}]\cr
-Optimization task.}
-
 \item{control}{[\code{ecr_control}]\cr
-Control object containing all operators and further parameters.
-See \code{\link{setupECRControl}} and \code{\link{setupEvolutionaryOperators}}.}
+Control object.}
+
+\item{inds}{[\code{list}]\cr
+List of individuals.}
+
+\item{...}{[any]\cr
+Optional parameters passed down to fitness function.}
 }
 \value{
 [\code{matrix}].
 }
 \description{
-This function expects a population, computes the fitness and
-returns the matrix of fitness values. This function makes use of
-\code{\link[parallelMap]{parallelMap}} to allow parallelization of fitness
-evaluation.
-Keep in mind, that the return value is a 1xn matrix in case of single-objective
-optimization.
+This function expects a list of individuals, computes the fitness and always
+returns a matrix of fitness values; even in single-objective optimization a
+(1 x n) matrix is returned for consistency, where n is the number of individuals.
+This function makes use of \code{\link[parallelMap]{parallelMap}} to
+parallelize the fitness evaluation.
 }
-

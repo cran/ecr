@@ -52,6 +52,8 @@ makeOptimizationTask = function(fun, n.objectives = NULL, minimize = NULL, objec
     } else {
       minimize = rep(TRUE, n.objectives)
     }
+  } else if (length(minimize) == 1L) {
+    minimize = rep(minimize, n.objectives)
   }
   assertLogical(minimize, any.missing = FALSE)
   assertCharacter(objective.names, len = n.objectives, any.missing = FALSE, all.missing = FALSE)

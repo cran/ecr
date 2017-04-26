@@ -1,5 +1,5 @@
 #' @title
-#' Generator of the Uniform mutation operator.
+#' Uniform mutator.
 #'
 #' @description
 #' This mutation operator works on real-valued genotypes only. It selects a position
@@ -10,21 +10,25 @@
 #' hinder premature convergence. However, in later stages - when fine tuning is
 #' necessary, this feature is disadvantegous.
 #'
-#' @return [\code{ecr_mutator}]
+#' @param ind [\code{numeric}]\cr
+#'   Numeric vector / individual to mutate.
+#' @param lower [\code{numeric}]\cr
+#'   Vector of minimal values for each parameter of the decision space.
+#' @param upper [\code{numeric}]\cr
+#'   Vector of maximal values for each parameter of the decision space.
+#' @return [\code{numeric}]
 #' @family mutators
 #' @export
-setupUniformMutator = function() {
-  mutator = function(ind, task, control) {
-    n.params = length(ind)
-    idx = sample(n.params, size = 1L)
-    ind[idx] = runif(1L, min = getLower(task$par.set)[idx], max = getUpper(task$par.set)[idx])
+mutUniform = makeMutator(
+  mutator = function(ind, lower, upper) {
+    assertNumeric(lower, any.missing = FALSE, all.missing = FALSE)
+    assertNumeric(upper, any.missing = FALSE, all.missing = FALSE)
+    if (length(lower) != length(upper)) {
+      stopf("Uniform mutator: length of lower and upper bounds need to be equal!")
+    }
+    n = length(ind)
+    idx = sample(n, size = 1L)
+    ind[idx] = runif(1L, min = lower[idx], max = upper[idx])
     return(ind)
-  }
-
-  makeMutator(
-    mutator = mutator,
-    name = "Uniform mutator",
-    description = "Replaces a randomly chosen parameter with a random value within the bounds",
-    supported = "float"
-  )
-}
+  },
+  supported = "float")

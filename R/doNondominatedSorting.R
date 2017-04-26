@@ -2,8 +2,8 @@
 #' Fast non-dominated sorting algorithm.
 #'
 #' @description
-#' Pure R implementation of the fast non-dominated sorting algorithm
-#' proposed by Deb. Non-dominated sorting expects a set of points and returns a
+#' Fast non-dominated sorting algorithm proposed by Deb. Non-dominated sorting
+#' expects a set of points and returns a
 #' set of non-dominated fronts. In short words this is done as follows: the
 #' non-dominated points of the entire set are determined and assigned rank 1.
 #' Afterwards all points with the current rank are removed, the rank is increased
@@ -20,7 +20,7 @@
 #' 182-197.
 #'
 #' @param x [\code{matrix}]\cr
-#'   Numeric matrix of points. Each column contains one objective vector.
+#'   Numeric matrix of points. Each column contains one point.
 #' @return [\code{list}]
 #'   List with the following components
 #'   \describe{
@@ -33,11 +33,11 @@
 #' @export
 doNondominatedSorting = function(x) {
   assertMatrix(x, min.rows = 2L, min.cols = 2L, any.missing = FALSE, all.missing = FALSE, mode = "numeric")
-  return(.Call("doNondominatedSorting", x))
+  return(.Call("doNondominatedSortingC", x, PACKAGE = "ecr"))
 }
 
 # Old pure R implementation
-doNondominatedSortingR = function(x) {
+doNondominatedSortingR = function(x) { # nocov start
   # initialize domination front wrapper
   fronts = list()
   fronts[[1L]] = list()
@@ -90,4 +90,4 @@ doNondominatedSortingR = function(x) {
       dom.counter = dom.counter2 # assign the unmodified version
     )
   )
-}
+} # nocov end
