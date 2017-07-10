@@ -2,15 +2,16 @@
 % Please edit documentation in R/ecr.R
 \name{ecr}
 \alias{ecr}
-\title{Interface to \pkg{ecr} similar to the \code{\link[stats]{optim}} function.}
+\title{Interface to ecr similar to the optim function.}
 \usage{
 ecr(fitness.fun, minimize = NULL, n.objectives = NULL, n.dim = NULL,
   lower = NULL, upper = NULL, n.bits, representation, mu, lambda,
   perm = NULL, p.recomb = 0.7, p.mut = 0.3, survival.strategy = "plus",
-  n.elite = 0L, custom.constants = list(), logger = NULL,
-  monitor = NULL, more.args = list(), initial.solutions = NULL,
-  parent.selector = NULL, survival.selector = NULL, mutator = NULL,
-  recombinator = NULL, terminators = list(stopOnIters(100L)), ...)
+  n.elite = 0L, custom.constants = list(), log.stats = list(fitness =
+  list("min", "mean", "max")), log.pop = FALSE, monitor = NULL,
+  initial.solutions = NULL, parent.selector = NULL,
+  survival.selector = NULL, mutator = NULL, recombinator = NULL,
+  terminators = list(stopOnIters(100L)), ...)
 }
 \arguments{
 \item{fitness.fun}{[\code{function}]\cr
@@ -79,16 +80,18 @@ Default is 0.}
 Additional constants which should be available to all generators and operators.
 Defaults to empty list.}
 
-\item{logger}{[\code{function}]\cr
-Monitoring object used to log stuff.
-Default is \code{NULL} which means no logging at all.}
+\item{log.stats}{[\code{list}]\cr
+(Named) list of scalar functions to compute statistics on the fitness values
+in each generation. See \code{\link{initLogger}} for more information.
+Default is to log fitness minimum, mean and maximum values.}
+
+\item{log.pop}{[\code{logical(1)}]\cr
+Shall the entire population be saved in each generation?
+Default is \code{FALSE}.}
 
 \item{monitor}{[\code{function}]\cr
 Monitoring function.
 Default is \code{NULL}, i.e. no monitoring.}
-
-\item{more.args}{[\code{list}]\cr
-Additional arguments passed to objective function.}
 
 \item{initial.solutions}{[\code{list}]\cr
 List of individuals which should be placed in the initial population.
@@ -123,8 +126,8 @@ Further arguments passed down to \code{fitness.fun}.}
 [\code{\link{ecr_result}}]
 }
 \description{
-The most flexible way to setup evolutionary algorithms with \pkg{ecr2} is by
-explicitely writing the evolutionary loop utilizing various ecr2 utlity functions.
+The most flexible way to setup evolutionary algorithms with ecr is by
+explicitely writing the evolutionary loop utilizing various ecr utlity functions.
 However, in everyday life R users frequently need to optimize a single-objective R function.
 The \code{ecr} function thus provides a more R like interface for single
 objective optimization similar to the interface of the \code{\link[stats]{optim}}

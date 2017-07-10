@@ -1,9 +1,9 @@
 #' @title
-#' Interface to \pkg{ecr} similar to the \code{\link[stats]{optim}} function.
+#' Interface to ecr similar to the optim function.
 #'
 #' @description
-#' The most flexible way to setup evolutionary algorithms with \pkg{ecr2} is by
-#' explicitely writing the evolutionary loop utilizing various ecr2 utlity functions.
+#' The most flexible way to setup evolutionary algorithms with ecr is by
+#' explicitely writing the evolutionary loop utilizing various ecr utlity functions.
 #' However, in everyday life R users frequently need to optimize a single-objective R function.
 #' The \code{ecr} function thus provides a more R like interface for single
 #' objective optimization similar to the interface of the \code{\link[stats]{optim}}
@@ -27,9 +27,9 @@
 #' @template arg_survival_strategy
 #' @template arg_n_elite
 #' @template arg_custom_constants
-#' @template arg_logger
+#' @template arg_logstats
+#' @template arg_logpop
 #' @template arg_monitor
-#' @template arg_more_args
 #' @template arg_initial_solutions
 #' @template arg_parent_selector
 #' @template arg_survival_selector
@@ -54,8 +54,11 @@ ecr = function(
   representation, mu, lambda, perm = NULL,
   p.recomb = 0.7, p.mut = 0.3,
   survival.strategy = "plus", n.elite = 0L,
-  custom.constants = list(), logger = NULL, monitor = NULL,
-  more.args = list(), initial.solutions = NULL,
+  custom.constants = list(),
+  log.stats = list(fitness = list("min", "mean", "max")),
+  log.pop = FALSE,
+  monitor = NULL,
+  initial.solutions = NULL,
   parent.selector = NULL,
   survival.selector = NULL,
   mutator = NULL,
@@ -81,6 +84,7 @@ ecr = function(
   assertChoice(survival.strategy, c("comma", "plus"))
   assertNumber(p.recomb, lower = 0, upper = 1)
   assertNumber(p.mut, lower = 0, upper = 1)
+  assertFlag(log.pop)
   assertList(terminators, any.missing = FALSE, all.missing = FALSE, types = "ecr_terminator")
   mu = asInt(mu, lower = 1L)
   lambda.lower = if (survival.strategy == "plus") 1L else mu
@@ -96,15 +100,14 @@ ecr = function(
     control = registerECROperator(control, "mutate", coalesce(mutator, getDefaultEvolutionaryOperators(representation, "mutator", n.objectives, control)))
   if (representation != "custom" | !is.null(recombinator))
     control = registerECROperator(control, "recombine", coalesce(recombinator, getDefaultEvolutionaryOperators(representation, "recombinator", n.objectives, control)))
-  control = registerECROperator(control, "selectForSurvival", coalesce(getDefaultEvolutionaryOperators(representation, "survival.selector", n.objectives, control)))
+  control = registerECROperator(control, "selectForSurvival", coalesce(survival.selector, getDefaultEvolutionaryOperators(representation, "survival.selector", n.objectives, control)))
   control = registerECROperator(control, "selectForMating", coalesce(parent.selector, getDefaultEvolutionaryOperators(representation, "parent.selector", n.objectives, control)))
 
-  # # init logger
-  #FIXME: logger params should be passable to ecr -> logger.pars
+  # init logger
   log = initLogger(control,
-    log.stats = list(fitness = list("min", "max", "mean")),
+    log.stats = log.stats,
     #, "hv" = list(fun = computeHV, pars = list(ref.point = rep(11, 2L)))),
-    log.pop = TRUE, init.size = 1000L)
+    log.pop = log.pop, init.size = 1000L)
 
   # generate population (depends on representation)
   gen.fun = NULL

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Jakob Bossek" />
 
-<meta name="date" content="2017-04-25" />
+<meta name="date" content="2017-07-10" />
 
 <title>Brief introduction to ecr</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Brief introduction to ecr</h1>
 <h4 class="author"><em>Jakob Bossek</em></h4>
-<h4 class="date"><em>2017-04-25</em></h4>
+<h4 class="date"><em>2017-07-10</em></h4>
 
 
 
@@ -95,6 +95,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="co">#&gt; Loading required package: smoof</span>
 <span class="co">#&gt; Loading required package: ParamHelpers</span>
 <span class="co">#&gt; Loading required package: checkmate</span>
+<span class="co">#&gt; Warning: package 'checkmate' was built under R version 3.4.1</span>
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(smoof)
 fn =<span class="st"> </span><span class="kw">makeAckleyFunction</span>(1L)
@@ -131,10 +132,10 @@ for (i in <span class="kw">seq_len</span>(MAX.ITER)) {
     fitness =<span class="st"> </span>sel$fitness
 }
 <span class="kw">print</span>(<span class="kw">min</span>(fitness))
-<span class="co">#&gt; [1] 0.00111718</span>
+<span class="co">#&gt; [1] 0.004714936</span>
 <span class="kw">print</span>(population[[<span class="kw">which.min</span>(fitness)]])
-<span class="co">#&gt;            x </span>
-<span class="co">#&gt; 0.0002782641</span></code></pre></div>
+<span class="co">#&gt;           x </span>
+<span class="co">#&gt; 0.001160794</span></code></pre></div>
 <div id="black-box-approach" class="section level3">
 <h3>Black-box approach</h3>
 <p>Since the optimization of a continuous numeric function is a standard task in EC, <strong>ecr</strong> ships with a black-box function <code>ecr(...)</code> which basically is a customizable wrapper around the loop above. A lot of tasks can be accomplished by utlizing this single entry point. However, often EA design requires small tweaks, changes and adaptations which are simply impossible to realize with a black box regardless of their flexebility.</p>
@@ -146,13 +147,13 @@ for (i in <span class="kw">seq_len</span>(MAX.ITER)) {
   <span class="dt">mutator =</span> <span class="kw">setup</span>(mutGauss, <span class="dt">sdev =</span> <span class="dv">2</span>, <span class="dt">lower =</span> lower, <span class="dt">upper =</span> upper),
   <span class="dt">terminators =</span> <span class="kw">list</span>(<span class="kw">stopOnIters</span>(MAX.ITER)))
 <span class="kw">print</span>(res$best.y)
-<span class="co">#&gt; [1] 4.680605e-06</span>
+<span class="co">#&gt; [1] 5.955506e-05</span>
 <span class="kw">print</span>(res$best.x)
 <span class="co">#&gt; [[1]]</span>
 <span class="co">#&gt;            x </span>
-<span class="co">#&gt; 1.170133e-06 </span>
+<span class="co">#&gt; 1.488582e-05 </span>
 <span class="co">#&gt; attr(,&quot;fitness&quot;)</span>
-<span class="co">#&gt; [1] 4.680605e-06</span></code></pre></div>
+<span class="co">#&gt; [1] 5.955506e-05</span></code></pre></div>
 </div>
 </div>
 </div>
@@ -164,7 +165,7 @@ for (i in <span class="kw">seq_len</span>(MAX.ITER)) {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
