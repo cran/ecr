@@ -7,7 +7,7 @@ test_that("mutation operators working on permutation genes create valid offsprin
 
   # gather all mutators for permutation representation
   available.mutators = c(
-    mutSwap, mutInversion, mutInsertion, mutScramble
+    mutSwap, mutInversion, mutInsertion, mutScramble, mutJump
   )
 
   test.ind = letters[3:13]
@@ -27,14 +27,14 @@ test_that("mutation operators working on real-numbered representation create val
   # defs
   n.reps = 5L
 
-  available.mutators = c(setup(mutGauss, lower = rep(0, 5), upper = rep(1, 5)),
-    setup(mutUniform, lower = rep(0, 5), upper = rep(1, 5)))
+  available.mutators = c(ecr::setup(mutGauss, lower = rep(0, 5), upper = rep(1, 5)),
+    ecr::setup(mutUniform, lower = rep(0, 5), upper = rep(1, 5)))
 
   for (mutate in available.mutators) {
     test.ind = runif(5L)
     for (i in seq(n.reps)) {
       child = mutate(test.ind)
-      expect_true(all(child >= 0 && child <= 1), info = sprintf("Mutator '%s' did not stick to the
+      expect_true(all((child >= 0) & (child <= 1)), info = sprintf("Mutator '%s' did not stick to the
         box constraints! Input: (%s), Output: (%s)", "mutate", collapse(test.ind), collapse(child)))
     }
   }

@@ -23,12 +23,14 @@
 #' @param offset [\code{numeric(1)}]\cr
 #'   Offset to be added to each component of the reference point only in the case
 #'   where no reference is provided and one is calculated automatically.
+#' @param ... [any]\cr
+#'   Not used at the moment.
 #' @return [\code{numeric(1)}] Dominated hypervolume in the case of
 #'  \code{computeHV} and the dominated hypervolume contributions
 #'  for each point in the case of \code{computeHVContr}.
 #' @rdname dominated_hypervolume
 #' @export
-computeHV = function(x, ref.point = NULL) {
+computeHV = function(x, ref.point = NULL, ...) {
   # sanity checks
   assertMatrix(x, mode = "numeric", any.missing = FALSE, all.missing = FALSE)
 
@@ -51,12 +53,14 @@ computeHV = function(x, ref.point = NULL) {
     return(NaN)
   }
 
-  return(.Call("computeHVC", x, ref.point, PACKAGE = "ecr"))
+  return(.Call("computeHVC", x, ref.point))
 }
 
 #' @export
 #' @rdname dominated_hypervolume
 computeHVContr = function(x, ref.point = NULL, offset = 1) {
+  if (ncol(x) == 1L)
+    BBmisc::stopf("[computeHVContr] Computation requires at least 2 points in x.")
   if (is.null(ref.point)) {
     ref.point = approximateNadirPoint(x) + offset
   }
@@ -64,5 +68,6 @@ computeHVContr = function(x, ref.point = NULL, offset = 1) {
   assertNumeric(ref.point, any.missing = FALSE)
   assertNumber(offset, finite = TRUE, lower = 0)
 
-  return(.Call("computeHVContributionC", x, ref.point, PACKAGE = "ecr"))
+  # NOTE: we pass  a copy of x here, since otherwise the C-code changes x in place
+  return(.Call("computeHVContributionC", x[,], ref.point))
 }

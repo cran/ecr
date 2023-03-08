@@ -44,7 +44,7 @@ NULL
 # @param control [\code{ecr_control}]\cr
 #   Control object.
 # @return [\code{ecr_single_objective_result} | \code{ecr_multi_objective_result}]
-setupResult = function(population, fitness, control) {
+setupResult = function(population, fitness, control, log, stop.object) {
   UseMethod("setupResult")
 }
 
@@ -79,6 +79,7 @@ print.ecr_single_objective_result = function(x, ...) {
 
 #' @export
 setupResult.ecr_multi_objective = function(population, fitness, control, log, stop.object) {
+  fitness = transformFitness(fitness, control$task, control$selectForMating)
   pareto.idx = which.nondominated(fitness)
   pareto.front = as.data.frame(t(fitness[, pareto.idx, drop = FALSE]))
   colnames(pareto.front) = control$task$objective.names

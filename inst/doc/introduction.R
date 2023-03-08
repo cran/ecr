@@ -1,4 +1,4 @@
-## ---- echo = FALSE, message = FALSE--------------------------------------
+## ---- echo = FALSE, message = FALSE-------------------------------------------
 knitr::opts_chunk$set(collapse = T, comment = "#>")
 options(tibble.print_min = 4L, tibble.print_max = 4L)
 
@@ -10,17 +10,17 @@ fn = makeAckleyFunction(1L)
 pl = autoplot(fn, show.optimum=TRUE, length.out = 1000)
 print(pl)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 MU = 30L; LAMBDA = 5L; MAX.ITER = 200L
 lower = getLowerBoxConstraints(fn)
 upper = getUpperBoxConstraints(fn)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 control = initECRControl(fn)
 control = registerECROperator(control, "mutate", mutGauss, sdev = 2, lower = lower, upper = upper)
 control = registerECROperator(control, "selectForSurvival", selGreedy)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 population = genReal(MU, getNumberOfParameters(fn), lower, upper)
 fitness = evaluateFitness(control, population)
 for (i in seq_len(MAX.ITER)) {
@@ -38,7 +38,7 @@ for (i in seq_len(MAX.ITER)) {
 print(min(fitness))
 print(population[[which.min(fitness)]])
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 res = ecr(fitness.fun = fn, representation = "float",
   n.dim = getNumberOfParameters(fn), survival.strategy = "plus",
   lower = lower, upper = upper,

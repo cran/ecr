@@ -26,7 +26,6 @@
 #' @template arg_p_mut
 #' @template arg_survival_strategy
 #' @template arg_n_elite
-#' @template arg_custom_constants
 #' @template arg_logstats
 #' @template arg_logpop
 #' @template arg_monitor
@@ -54,7 +53,6 @@ ecr = function(
   representation, mu, lambda, perm = NULL,
   p.recomb = 0.7, p.mut = 0.3,
   survival.strategy = "plus", n.elite = 0L,
-  custom.constants = list(),
   log.stats = list(fitness = list("min", "mean", "max")),
   log.pop = FALSE,
   monitor = NULL,
@@ -106,7 +104,6 @@ ecr = function(
   # init logger
   log = initLogger(control,
     log.stats = log.stats,
-    #, "hv" = list(fun = computeHV, pars = list(ref.point = rep(11, 2L)))),
     log.pop = log.pop, init.size = 1000L)
 
   # generate population (depends on representation)
@@ -136,6 +133,8 @@ ecr = function(
   for (i in seq_along(population)) {
     attr(population[[i]], "fitness") = fitness[, i]
   }
+
+  updateLogger(log, population, fitness = fitness, n.evals = mu)
 
   repeat {
     # generate offspring
@@ -168,5 +167,7 @@ makeECRResult = function(control, log, population, fitness, stop.object, ...) {
   n.objectives = control$task$n.objectives
   if (n.objectives == 1L)
     return(setupResult.ecr_single_objective(population, fitness, control, log, stop.object, ...))
-  return(setupResult.ecr_multi_objective(population, fitness, control, log, stop.object, ...))
+  moo.res = setupResult.ecr_multi_objective(population, fitness, control, log, stop.object, ...)
+  moo.res = filterDuplicated(moo.res)
+  return(moo.res)
 }

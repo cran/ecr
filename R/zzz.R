@@ -5,11 +5,19 @@
 #' @import parallelMap
 #' @import reshape2
 #' @import ParamHelpers
-#' @importFrom stats median rnorm runif
-#' @importFrom utils tail
-#' @useDynLib ecr
+#' @import kableExtra
+#' @importFrom stats median rnorm runif dist formula sd wilcox.test
+#' @importFrom utils tail head
+#' @importFrom knitr kable
+#' @importFrom lazyeval interp
+#' @useDynLib ecr, .registration = TRUE
+#' @importFrom Rcpp sourceCpp
 NULL
 
 .onAttach = function(libname, pkgname) {
-  parallelRegisterLevels(package = "ecr", levels = c("evaluateFitness", "generateOffspring"))
+  parallelMap::parallelRegisterLevels(package = "ecr", 
+                                      levels = c("evaluateFitness", 
+                                                 "generateOffspring", 
+                                                 "computeDominanceRanking", 
+                                                 "computeIndicators"))
 }

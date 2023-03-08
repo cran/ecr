@@ -7,6 +7,14 @@
 #' an individual \eqn{\mathbf{x} \in R^l} this mutator adds a Gaussian
 #' distributed random value to each component of \eqn{\mathbf{x}}, i.~e.,
 #' \eqn{\tilde{\mathbf{x}}_i = \mathbf{x}_i + \sigma \mathcal{N}(0, 1)}.
+#' 
+#' @references 
+#' [1] Beyer, Hans-Georg & Schwefel, Hans-Paul (2002). Evolution strategies. 
+#' Kluwer Academic Publishers.
+#' 
+#' [2] Mateo, P. M. & Alberto, I. (2011). A mutation operator based
+#' on a Pareto ranking for multi-objective evolutionary algorithms. 
+#' Springer Science+Business Meda. 57.
 #'
 #' @param ind [\code{numeric}]\cr
 #'   Numeric vector / individual to mutate.
@@ -23,13 +31,9 @@
 #' @export
 mutGauss = makeMutator(
   mutator = function(ind, p = 1L, sdev = 0.05, lower, upper) {
-    assertNumber(p, lower = 0, finite = TRUE, na.ok = FALSE)
-    assertNumber(sdev, lower = 0, finite = TRUE, na.ok = FALSE)
-    assertNumeric(lower, any.missing = FALSE, all.missing = FALSE)
-    assertNumeric(lower, any.missing = FALSE, all.missing = FALSE)
-    if (length(lower) != length(upper)) {
-      stopf("Gauss mutator: length of lower and upper bounds need to be equal!")
-    }
+    checkNumericMutatorArguments(ind, lower, upper, "mutGauss")
+    checkmate::assertNumber(p, lower = 0, finite = TRUE, na.ok = FALSE)
+    checkmate::assertNumber(sdev, lower = 0, finite = TRUE, na.ok = FALSE)
 
     n = length(ind)
     mut.idx = runif(n) < p
